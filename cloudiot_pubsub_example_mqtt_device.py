@@ -75,6 +75,7 @@ class Device(object):
     """Represents the state of a single device."""
 
     def __init__(self):
+        self.file = open('interations.txt','r+')
         self.temperature = 0
         self.fan_on = False
         self.connected = False
@@ -151,21 +152,26 @@ def parse_command_line_args():
         description='Example Google Cloud IoT MQTT device connection code.')
     parser.add_argument(
         '--project_id',
-        default=os.environ.get("GOOGLE_CLOUD_PROJECT"),
-        required=True,
+        default='tediot-205513',
+        required=False,
         help='GCP cloud project name.')
     parser.add_argument(
-        '--registry_id', required=True, help='Cloud IoT registry id')
+        '--registry_id', default='TEDregistry', required=False
+        , help='Cloud IoT registry id')
     parser.add_argument(
         '--device_id',
-        required=True,
+        default='TEDdevice',
+        required=False,
         help='Cloud IoT device id')
     parser.add_argument(
-        '--private_key_file', required=True, help='Path to private key file.')
+        '--private_key_file',
+        default='rsa_private.pem',
+        required=False, help='Path to private key file.')
     parser.add_argument(
         '--algorithm',
-        choices=('RS256', 'ES256'),
-        required=True,
+        default='RS256',
+        #choices=('RS256', 'ES256'),
+        required=False,
         help='Which encryption algorithm to use to generate the JWT.')
     parser.add_argument(
         '--cloud_region', default='us-central1', help='GCP cloud region')
@@ -176,7 +182,7 @@ def parse_command_line_args():
     parser.add_argument(
         '--num_messages',
         type=int,
-        default=100,
+        default=1,
         help='Number of messages to publish.')
     parser.add_argument(
         '--mqtt_bridge_hostname',
@@ -186,7 +192,7 @@ def parse_command_line_args():
         '--mqtt_bridge_port', default=8883, help='MQTT bridge port.')
     parser.add_argument(
         '--message_type', choices=('event', 'state'),
-        default='event',
+        default='state',
         help=('Indicates whether the message to be published is a '
               'telemetry event or a device state message.'))
 
@@ -237,18 +243,22 @@ def main():
     client.subscribe(mqtt_config_topic, qos=1)
 
     # Update and publish temperature readings at a rate of one per second.
-    for _ in range(args.num_messages):
+    #for _ in range(args.num_messages):
         # In an actual device, this would read the device's sensors. Here,
         # you update the temperature based on whether the fan is on.
-        device.update_sensor_data()
+     #   device.update_sensor_data()
 
         # Report the device's temperature to the server by serializing it
         # as a JSON string.
-        payload = json.dumps({'temperature': device.temperature})
+    for line in device.file:        
+        payload = json.dumps({'Interation': line})
         print('Publishing payload', payload)
         client.publish(mqtt_telemetry_topic, payload, qos=1)
         # Send events every second.
         time.sleep(1)
+
+    #device.file.seek(0)
+    #device.file.truncate()
 
     client.disconnect()
     client.loop_stop()
