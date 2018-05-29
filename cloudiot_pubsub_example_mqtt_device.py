@@ -231,7 +231,7 @@ def main():
 
     # This is the topic that the device will publish telemetry events
     # (temperature data) to.
-    mqtt_telemetry_topic = '/devices/{}/events'.format(args.device_id)
+    mqtt_telemetry_topic = '/devices/{}/state'.format(args.device_id)
 
     # This is the topic that the device will receive configuration updates on.
     mqtt_config_topic = '/devices/{}/config'.format(args.device_id)
@@ -255,10 +255,10 @@ def main():
         print('Publishing payload', payload)
         client.publish(mqtt_telemetry_topic, payload, qos=1)
         # Send events every second.
-        time.sleep(1)
+        #time.sleep(1)
 
-    #device.file.seek(0)
-    #device.file.truncate()
+    device.file.seek(0)
+    device.file.truncate()
 
     client.disconnect()
     client.loop_stop()
